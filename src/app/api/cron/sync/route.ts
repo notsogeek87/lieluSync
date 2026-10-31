@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 function authorized(req: Request): boolean {
-  const header = req.headers.get("authorization") ?? "";
+  const header = (req.headers.get("authorization") ?? "").trim();
   const expected = `Bearer ${env().CRON_SECRET}`;
   return safeEqual(header, expected);
 }

@@ -19,17 +19,18 @@ const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z
     .string()
+    .trim()
     .url()
     .transform((v) => v.replace(/\/+$/, "")),
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: z.string().trim().min(1),
   DATABASE_SSL: z.enum(["require", "disable"]).optional(),
-  TMDB_API_READ_ACCESS_TOKEN: z.string().min(20),
+  TMDB_API_READ_ACCESS_TOKEN: z.string().trim().min(20),
   /** Override only for local end-to-end tests against a fake TMDB server. */
   TMDB_API_BASE_URL: z.string().url().optional(),
   TOKEN_ENCRYPTION_KEY: base64Key,
   TOKEN_ENCRYPTION_KEY_PREVIOUS: base64Key.optional(),
-  HASH_SECRET: z.string().min(32, "must be at least 32 characters"),
-  CRON_SECRET: z.string().min(32, "must be at least 32 characters"),
+  HASH_SECRET: z.string().trim().min(32, "must be at least 32 characters"),
+  CRON_SECRET: z.string().trim().min(32, "must be at least 32 characters"),
   SYNC_INTERVAL_MINUTES: z.coerce.number().int().min(5).max(1440).default(15),
   CRON_TIME_BUDGET_SECONDS: z.coerce.number().int().min(20).max(780).default(240),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
