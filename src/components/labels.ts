@@ -39,6 +39,7 @@ export const errorMessages: Record<string, string> = {
   invalid_state: "La demande de connexion n'est plus valide. Recommencez depuis cette page.",
   expired: "La demande de connexion a expiré (15 minutes). Recommencez.",
   tmdb_denied: "L'autorisation n'a pas été accordée sur TMDB.",
+  tmdb_config: "Le service n'est pas encore correctement configuré (jeton TMDB refusé). Réessayez plus tard.",
   tmdb_unavailable: "TMDB ne répond pas pour le moment. Réessayez dans quelques minutes.",
   account_mismatch: "Ce compte TMDB est déjà lié à un autre compte Lielu Lists, ou ne correspond pas au compte connecté.",
   rate_limited: "Trop de tentatives de connexion. Patientez quelques minutes.",

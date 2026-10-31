@@ -37,7 +37,8 @@ export async function startTmdbLogin(req: Request, currentUserId: string | null)
     ]);
   } catch (err) {
     log.error("auth.start_failed", { err });
-    return redirect(appUrl("/?error=tmdb_unavailable"));
+    const code = err instanceof Error && "code" in err && (err as { code: string }).code === "unauthorized" ? "tmdb_config" : "tmdb_unavailable";
+    return redirect(appUrl(`/?error=${code}`));
   }
 }
 

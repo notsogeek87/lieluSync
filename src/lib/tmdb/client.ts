@@ -23,6 +23,12 @@ export class TmdbClient {
     this.http = new TmdbHttp(opts);
   }
 
+  /** Checks the application token (GET /3/authentication). */
+  async checkAppToken(): Promise<boolean> {
+    const r = await this.http.request({ path: "/3/authentication", bearer: this.appToken, schema: S.genericStatus });
+    return r.success !== false;
+  }
+
   // ------------------------------------------------------------- auth (v4)
   async createRequestToken(redirectTo: string): Promise<string> {
     const r = await this.http.request({
