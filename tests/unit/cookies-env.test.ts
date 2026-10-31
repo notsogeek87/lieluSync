@@ -39,3 +39,11 @@ describe("environment & origin checks", () => {
     expect(isSameOrigin(mk({}))).toBe(false);
   });
 });
+
+import { normalizeDatabaseUrl } from "@/lib/db/client";
+describe("database url", () => {
+  it("drops libpq-only options from Neon connection strings", () => {
+    const u = normalizeDatabaseUrl("postgresql://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/db?sslmode=require&channel_binding=require");
+    expect(u).toBe("postgresql://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/db");
+  });
+});

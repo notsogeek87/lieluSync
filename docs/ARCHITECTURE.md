@@ -38,6 +38,7 @@ Ce document résume l'analyse des documentations officielles (octobre 2026) et l
 |---|---|
 | **Next.js 16 (App Router) + TypeScript** | UI et API dans un seul projet Vercel. |
 | **Identité = compte TMDB** (« Se connecter avec TMDB ») + sessions serveur | Pas de mot de passe ni d'e-mail à gérer ; l'utilisateur doit de toute façon autoriser TMDB. Cookie `__Host-` HttpOnly/Secure/SameSite=Lax, token aléatoire 256 bits stocké haché (HMAC). |
+| **PostgreSQL sur Neon** (Francfort, branches `production`/`development`) | Postgres standard sans fonctionnalité propriétaire : le code reste compatible Supabase. Vercel en `fra1` pour être à côté de la base. |
 | **Driver `postgres` direct** (pas supabase-js) | Transactions réelles pour le remplacement atomique des listes, verrous, `FOR UPDATE SKIP LOCKED`. |
 | **RLS activé sans politique + REVOKE** pour `anon`/`authenticated` | La Data API ne peut rien lire ni écrire. Le serveur utilise le rôle propriétaire et **chaque requête est filtrée par `user_id`** (tests d'isolation). |
 | **IDs Stremio** : `tt…` si IMDb, sinon `tmdb:{id}` | Compatibilité maximale avec Cinemeta et les addons de flux ; fallback servi par notre ressource `meta` (préfixe `tmdb:`), avec épisodes pour les séries. |

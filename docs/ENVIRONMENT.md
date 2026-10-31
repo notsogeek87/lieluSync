@@ -3,7 +3,7 @@
 | Variable | Obligatoire | Description | Où l'obtenir |
 |---|---|---|---|
 | `APP_URL` | oui | URL publique, sans `/` final. Sert aux redirections TMDB, aux URLs Stremio et au contrôle d'origine. | Domaine Vercel (ex. `https://lists.lielu.eu`) |
-| `DATABASE_URL` | oui | Chaîne Postgres. Sur Vercel : **Transaction pooler** (port 6543). | Supabase › *Connect* |
+| `DATABASE_URL` | oui | Chaîne Postgres **poolée** (Neon : hôte `-pooler`). | Console Neon › projet lielu-lists › *Connect* |
 | `DATABASE_SSL` | non | `require` / `disable`. Par défaut : désactivé pour localhost, requis sinon. | — |
 | `TMDB_API_READ_ACCESS_TOKEN` | oui | Jeton applicatif v4 (« API Read Access Token »). | themoviedb.org › Paramètres › API |
 | `TOKEN_ENCRYPTION_KEY` | oui | 32 octets en base64. Chiffre les tokens TMDB. **Le perdre = tous les utilisateurs doivent se reconnecter.** | `npm run gen:secret` |
@@ -16,11 +16,11 @@
 | `TMDB_API_BASE_URL` | non | **Tests uniquement** : redirige les appels TMDB vers un faux serveur. Ne pas définir en production. | — |
 
 ## Environnements
-Créez **deux** projets Supabase (ou deux bases) et **deux** jeux de variables :
+Une base par environnement — avec Neon, une **branche** par environnement :
 
 | | Development / Preview | Production |
 |---|---|---|
-| Supabase | projet `lielu-lists-dev` | projet `lielu-lists` |
+| Neon (projet lielu-lists) | branche `development` | branche `production` |
 | `APP_URL` | URL de preview stable ou `http://localhost:3000` | domaine de production |
 | Secrets | propres à l'environnement | propres à l'environnement |
 | App TMDB | peut être la même (le `redirect_to` est dynamique) | — |

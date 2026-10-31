@@ -1,13 +1,15 @@
 # Déploiement
 
-## 1. Supabase
-1. Créez un projet sur <https://supabase.com/dashboard> (région conseillée : **eu-west-3 Paris**, cohérente avec la région Vercel `cdg1` de `vercel.json`). Faites-en un second pour le développement.
-2. Appliquez le schéma, au choix :
-   - **SQL Editor** : collez `supabase/migrations/20261031000000_init.sql` et exécutez ;
-   - **Supabase CLI** : `supabase link --project-ref <ref>` puis `supabase db push` ;
-   - **script du projet** : `DATABASE_URL="<chaîne directe ou session pooler>" npm run db:migrate`.
-3. Récupérez la chaîne **Transaction pooler** (port 6543) dans *Connect* → ce sera `DATABASE_URL` sur Vercel.
-4. Vérifiez dans *Table Editor* que les tables affichent « RLS enabled ». Aucune politique n'est nécessaire : l'application n'utilise pas la Data API.
+## 1. Base de données (Neon)
+Le projet Neon **lielu-lists** (`autumn-bar-79991888`, région AWS Francfort `aws-eu-central-1`, PostgreSQL 17) est déjà créé, avec :
+- la branche **`production`** (par défaut), base `lielu_lists`, schéma appliqué ;
+- la branche **`development`**, copie de `production`, pour le développement et les previews.
+
+Récupérez les chaînes de connexion dans la console Neon › *Connect* : sélectionnez la branche, la base `lielu_lists`, et activez **Connection pooling** (l'hôte contient `-pooler`). Une chaîne par environnement → `DATABASE_URL`.
+
+Migrations futures : `DATABASE_URL="<chaîne>" npm run db:migrate` (le script ignore les migrations déjà appliquées, suivies dans `_lielu_migrations`).
+
+> Toute base PostgreSQL ≥ 14 convient (Supabase, Postgres local…). Avec Supabase, utilisez la chaîne *Transaction pooler* (port 6543) ; la migration verrouille en plus la Data API (RLS + révocation pour `anon`/`authenticated`).
 
 ## 2. TMDB
 1. Compte sur <https://www.themoviedb.org>, puis *Paramètres › API* : demandez une clé (usage personnel/développeur).

@@ -12,7 +12,7 @@ Addon Stremio qui synchronise automatiquement les listes d'un compte TMDB (watch
 - Synchronisation sans serveur permanent : appel toutes les 15 min (n8n, ou Vercel Cron sur Pro) + rattrapage + synchro à la demande, verrou par utilisateur, remplacement atomique des listes (une erreur ne vide jamais un catalogue).
 
 ## Stack
-Next.js 16 (App Router) · TypeScript · Supabase PostgreSQL (driver `postgres`) · Zod · Vitest · Vercel Functions & Cron.
+Next.js 16 (App Router) · TypeScript · PostgreSQL sur Neon (driver `postgres`, compatible Supabase) · Zod · Vitest · Vercel Functions & Cron.
 
 ## Démarrage rapide
 ```bash
@@ -53,7 +53,7 @@ docs/                  ARCHITECTURE, DEPLOYMENT, ENVIRONMENT, SECURITY
 
 ## Documentation
 - [Architecture et analyse technique](docs/ARCHITECTURE.md)
-- [Déploiement Supabase / TMDB / Vercel et vérification](docs/DEPLOYMENT.md)
+- [Déploiement Neon / TMDB / Vercel et vérification](docs/DEPLOYMENT.md)
 - [Variables d'environnement](docs/ENVIRONMENT.md)
 - [Sécurité](docs/SECURITY.md)
 

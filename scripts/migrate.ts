@@ -13,7 +13,9 @@ async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is required");
   const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url);
-  const sql = postgres(url, { prepare: false, max: 1, ssl: local ? false : "require", onnotice: () => {} });
+  const clean = new URL(url);
+  for (const k of ["sslmode", "channel_binding"]) clean.searchParams.delete(k);
+  const sql = postgres(clean.toString(), { prepare: false, max: 1, ssl: local ? false : "require", onnotice: () => {} });
   try {
     await applyMigrations(sql);
   } finally {

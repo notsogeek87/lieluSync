@@ -10,6 +10,21 @@ declare global {
   var __lieluSql: postgres.Sql | undefined;
 }
 
+/**
+ * Neon / Supabase connection strings carry libpq options (sslmode,
+ * channel_binding) that the `postgres` driver would otherwise forward to the
+ * server as runtime parameters. TLS is configured explicitly instead.
+ */
+export function normalizeDatabaseUrl(raw: string): string {
+  try {
+    const u = new URL(raw);
+    for (const k of ["sslmode", "channel_binding", "sslrootcert", "pgbouncer"]) u.searchParams.delete(k);
+    return u.toString();
+  } catch {
+    return raw;
+  }
+}
+
 function sslFor(url: string): "require" | false {
   const forced = env().DATABASE_SSL;
   if (forced) return forced === "require" ? "require" : false;
@@ -23,7 +38,7 @@ function sslFor(url: string): "require" | false {
  */
 export function db(): postgres.Sql {
   if (!globalThis.__lieluSql) {
-    const url = env().DATABASE_URL;
+    const url = normalizeDatabaseUrl(env().DATABASE_URL);
     globalThis.__lieluSql = postgres(url, {
       prepare: false,
       max: Number(process.env.DATABASE_POOL_MAX ?? 5),
