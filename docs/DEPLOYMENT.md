@@ -21,7 +21,7 @@ Migrations futures : `DATABASE_URL="<chaîne>" npm run db:migrate` (le script ig
 1. *Add New › Project* → importez le dépôt GitHub. Framework : Next.js (détecté).
 2. *Settings › Environment Variables* : renseignez les variables de `docs/ENVIRONMENT.md` séparément pour **Production** et **Preview/Development**.
 3. Déployez. Le cron de `vercel.json` (quotidien, voir *Plan Hobby*) est créé au déploiement de production.
-4. Domaine : ajoutez par ex. `lists.lielu.eu` (*Settings › Domains*) puis mettez `APP_URL` à jour et redéployez.
+4. Domaine : ajoutez `lists.lielu.eu` (*Settings › Domains*), créez chez Infomaniak un enregistrement `CNAME lists → cname.vercel-dns.com.`, puis mettez `APP_URL=https://lists.lielu.eu`, redéployez et changez l'URL du workflow n8n. Les pages web servies sur l'ancienne adresse sont redirigées vers `APP_URL` ; les routes Stremio (`/u/…`) et `/api/…` restent servies sur toutes les adresses, donc un addon déjà installé continue de fonctionner (le réinstaller depuis la nouvelle adresse est recommandé).
 5. *Deployment Protection* : Stremio doit pouvoir joindre `/u/…` sans authentification. Laissez la protection désactivée sur la **production** ; pour tester une preview depuis Stremio, utilisez un *Protection Bypass* ou testez en production.
 6. Recommandé : *Firewall › Rate limiting* sur `/u/` et `/api/` en complément de la limitation applicative.
 
