@@ -63,7 +63,7 @@ rate_limits                               compteurs à fenêtre fixe (clés hach
 ## 4. Synchronisation
 
 ```
-Vercel Cron (*/15) ─► GET /api/cron/sync ─► runCronTick(budget 240 s)
+n8n (*/15) ou Vercel Cron ─► GET /api/cron/sync ─► runCronTick(budget 240 s)
                                               │  claimNextDueUser()  (UPDATE … FOR UPDATE SKIP LOCKED, repousse next_sync_at)
                                               ▼
                                          syncUser(user)

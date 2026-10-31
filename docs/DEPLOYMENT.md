@@ -18,21 +18,20 @@
 ## 3. Vercel
 1. *Add New › Project* → importez le dépôt GitHub. Framework : Next.js (détecté).
 2. *Settings › Environment Variables* : renseignez les variables de `docs/ENVIRONMENT.md` séparément pour **Production** et **Preview/Development**.
-3. Déployez. Le cron `*/15 * * * *` de `vercel.json` est créé au déploiement de production.
+3. Déployez. Le cron de `vercel.json` (quotidien, voir *Plan Hobby*) est créé au déploiement de production.
 4. Domaine : ajoutez par ex. `lists.lielu.eu` (*Settings › Domains*) puis mettez `APP_URL` à jour et redéployez.
 5. *Deployment Protection* : Stremio doit pouvoir joindre `/u/…` sans authentification. Laissez la protection désactivée sur la **production** ; pour tester une preview depuis Stremio, utilisez un *Protection Bypass* ou testez en production.
 6. Recommandé : *Firewall › Rate limiting* sur `/u/` et `/api/` en complément de la limitation applicative.
 
-### ⚠️ Plan Hobby
-Vercel **refuse le déploiement** d'un cron plus fréquent qu'une fois par jour sur le plan Hobby. Deux options :
+### ⚠️ Plan Hobby (configuration actuelle)
+Vercel **refuse le déploiement** d'un cron plus fréquent qu'une fois par jour sur le plan Hobby. Le dépôt est donc configuré ainsi :
 
-- **Plan Pro** : rien à changer.
-- **Hobby + planificateur externe** : remplacez dans `vercel.json` la planification par `"0 5 * * *"` (filet de sécurité quotidien), puis appelez l'endpoint toutes les 15 minutes depuis un planificateur externe, par exemple un workflow **n8n** (*Schedule Trigger* toutes les 15 min → *HTTP Request*) :
-  ```
-  GET https://<APP_URL>/api/cron/sync
-  Authorization: Bearer <CRON_SECRET>
-  ```
-  (cron-job.org ou toute autre solution capable d'envoyer cet en-tête convient aussi.)
+- `vercel.json` : cron **quotidien** `0 5 * * *` (filet de sécurité ; Hobby le déclenche entre 5 h 00 et 5 h 59 UTC) ;
+- **n8n** (auto.lielu.eu), workflow « Lielu Lists - Synchro toutes les 15 min » : *Schedule Trigger* toutes les 15 min → `GET <APP_URL>/api/cron/sync` avec l'en-tête `Authorization: Bearer <CRON_SECRET>` (identifiant n8n « Lielu Lists - CRON_SECRET », type *Custom Auth* avec le modèle `{"headers":{"Authorization":"Bearer {{api_key}}"}}`) → alerte Telegram uniquement en cas de panne, de rétablissement, puis rappel toutes les 4 h si la panne dure.
+
+Pour activer le workflow après le premier déploiement : renseigner l'URL dans le nœud « Lancer la synchronisation », créer l'identifiant avec la valeur de `CRON_SECRET`, tester avec « Tester maintenant », puis publier.
+
+En passant au plan **Pro**, remettre `"*/15 * * * *"` dans `vercel.json` et dépublier le workflow n8n.
 
 Dans tous les cas, la synchronisation **à la demande** (catalogue consulté avec des données de plus de 30 min) maintient les listes à jour même si le planificateur est en retard ou en panne.
 
@@ -54,7 +53,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://<APP_URL>/api/cron/sync   #
 6. Installez dans Stremio (bouton ou collage de l'URL dans *Addons*) : les catalogues apparaissent sur l'accueil et dans *Découvrir*. Ouvrez un titre : les sources de vos autres addons doivent s'afficher (preuve que les ids IMDb sont bons).
 7. Ajoutez un film à votre watchlist sur TMDB, cliquez *Synchroniser maintenant* : il apparaît dans Stremio (rafraîchissez la page d'accueil de Stremio ; cache client ≤ 5 min).
 8. Retirez-le sur TMDB, resynchronisez : il disparaît.
-9. Vercel › *Logs* : vérifiez les lignes `cron.tick` toutes les 15 min et l'absence de token dans les logs.
+9. Vercel › *Logs* : vérifiez les lignes `cron.tick` toutes les 15 min (appels n8n) et l'absence de token dans les logs.
 
 ## 5. Développement local
 ```bash

@@ -9,7 +9,7 @@ Addon Stremio qui synchronise automatiquement les listes d'un compte TMDB (watch
 - URL d'installation personnelle, aléatoire et régénérable ; aucun token dans l'URL.
 - Catalogues en français (titres, résumés, affiches) avec repli sur la langue d'origine.
 - Identifiants IMDb pour la compatibilité avec Cinemeta et les addons de sources ; repli `tmdb:` avec fiche servie par l'addon.
-- Synchronisation sans serveur permanent : Vercel Cron + rattrapage + synchro à la demande, verrou par utilisateur, remplacement atomique des listes (une erreur ne vide jamais un catalogue).
+- Synchronisation sans serveur permanent : appel toutes les 15 min (n8n, ou Vercel Cron sur Pro) + rattrapage + synchro à la demande, verrou par utilisateur, remplacement atomique des listes (une erreur ne vide jamais un catalogue).
 
 ## Stack
 Next.js 16 (App Router) · TypeScript · Supabase PostgreSQL (driver `postgres`) · Zod · Vitest · Vercel Functions & Cron.
@@ -58,7 +58,7 @@ docs/                  ARCHITECTURE, DEPLOYMENT, ENVIRONMENT, SECURITY
 - [Sécurité](docs/SECURITY.md)
 
 ## Limites connues
-- **Vercel Hobby** n'autorise qu'un cron quotidien : voir [DEPLOYMENT › Plan Hobby](docs/DEPLOYMENT.md#️-plan-hobby) (planificateur externe, ex. n8n).
+- **Vercel Hobby** n'autorise qu'un cron quotidien : `vercel.json` est réglé sur un passage par jour et un workflow n8n appelle la synchronisation toutes les 15 min (voir [DEPLOYMENT › Plan Hobby](docs/DEPLOYMENT.md)).
 - Les **fiches détaillées** des titres IMDb viennent de Cinemeta (anglais) : Stremio les demande au premier addon compatible. Les catalogues, eux, sont en français.
 - Après l'activation d'un **nouveau** catalogue, Stremio peut mettre du temps à relire le manifest ; réinstaller l'addon force la mise à jour. Le **contenu** des catalogues se met à jour sans réinstallation.
 - Les titres sans IMDb (`tmdb:`) ont une fiche mais la plupart des addons de sources ne les reconnaissent pas.
