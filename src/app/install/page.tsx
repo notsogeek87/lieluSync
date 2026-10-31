@@ -49,6 +49,24 @@ export default async function Install() {
         </ol>
       </section>
 
+      <section className="section" aria-labelledby="order">
+        <h2 id="order">Mettre vos listes en haut de l&apos;accueil</h2>
+        <div className="panel panel-pad stack">
+          <p className="muted">
+            Stremio affiche les catalogues dans l&apos;ordre des addons installés, et l&apos;application ne permet pas de les réordonner.
+            L&apos;outil libre Stremio Addon Manager le permet : placez Lielu Lists en tête de liste, puis enregistrez.
+          </p>
+          <div className="btn-row">
+            <a className="btn" href="https://addon-manager.stremaddon.net/" target="_blank" rel="noreferrer noopener">Ouvrir Stremio Addon Manager</a>
+            <a className="btn" href="https://github.com/pancake3000/stremio-addon-manager" target="_blank" rel="noreferrer noopener">Code source</a>
+          </div>
+          <p className="small muted">
+            Outil indépendant de Lielu Lists : il vous demande votre connexion Stremio et modifie directement votre compte Stremio.
+            Lielu Lists n&apos;y a pas accès. Les changements s&apos;appliquent à tous vos appareils, Android TV compris.
+          </p>
+        </div>
+      </section>
+
       <section className="section" aria-labelledby="notes">
         <h2 id="notes">Bon à savoir</h2>
         <div className="panel panel-pad stack small">
