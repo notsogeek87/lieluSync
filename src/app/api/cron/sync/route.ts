@@ -2,6 +2,7 @@ import { env } from "@/lib/config/env";
 import { safeEqual } from "@/lib/security/crypto";
 import { runCronTick } from "@/lib/sync/cron";
 import { apiError, json } from "@/lib/http/api";
+import { log } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -18,7 +19,18 @@ function authorized(req: Request): boolean {
  * scheduler sending the same header (GET or POST).
  */
 async function handle(req: Request) {
-  if (!authorized(req)) return apiError(401, "unauthorized");
+  if (!authorized(req)) {
+    // Diagnostic without any secret material: shape of the header only.
+    const header = (req.headers.get("authorization") ?? "").trim();
+    const value = header.replace(/^Bearer\s+/i, "");
+    log.warn("cron.unauthorized", {
+      headerPresent: header.length > 0,
+      bearerPrefix: /^Bearer\s+/i.test(header),
+      receivedLength: value.length,
+      expectedLength: env().CRON_SECRET.length,
+    });
+    return apiError(401, "unauthorized");
+  }
   const summary = await runCronTick({ budgetMs: env().CRON_TIME_BUDGET_SECONDS * 1000 });
   return json({ ok: true, ...summary });
 }
