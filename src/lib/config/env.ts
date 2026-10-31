@@ -4,10 +4,16 @@ import { z } from "zod";
  * Environment validation. Parsed lazily so that `next build` can run without
  * secrets; any runtime access to a missing/invalid variable fails loudly.
  */
+/** 32-byte key given as 64 hex characters or as base64. */
+export function decodeKey(v: string): Buffer {
+  const t = v.trim();
+  return /^[0-9a-fA-F]{64}$/.test(t) ? Buffer.from(t, "hex") : Buffer.from(t, "base64");
+}
+
 const base64Key = z
   .string()
   .min(1)
-  .refine((v) => Buffer.from(v, "base64").length === 32, "must be 32 bytes encoded in base64 (npm run gen:secret)");
+  .refine((v) => decodeKey(v).length === 32, "must be 32 bytes: 64 hex characters or base64 (npm run gen:secret)");
 
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),

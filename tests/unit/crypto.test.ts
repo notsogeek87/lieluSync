@@ -59,3 +59,17 @@ describe("identifiers", () => {
     expect(safeEqual("abc", "abcd")).toBe(false);
   });
 });
+
+describe("key formats", () => {
+  it("accepts a 64-char hex key", async () => {
+    const { decodeKey } = await import("@/lib/config/env");
+    expect(decodeKey("ab".repeat(32)).length).toBe(32);
+    expect(decodeKey(Buffer.alloc(32, 1).toString("base64")).length).toBe(32);
+    const saved = process.env.TOKEN_ENCRYPTION_KEY;
+    process.env.TOKEN_ENCRYPTION_KEY = "0f".repeat(32);
+    resetEnvCache();
+    expect(decryptSecret(encryptSecret("hex-key"))).toBe("hex-key");
+    process.env.TOKEN_ENCRYPTION_KEY = saved;
+    resetEnvCache();
+  });
+});

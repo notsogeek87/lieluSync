@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { env } from "@/lib/config/env";
+import { decodeKey, env } from "@/lib/config/env";
 
 /**
  * AES-256-GCM envelope: "v{keyVersion}.{iv}.{tag}.{ciphertext}" (base64url parts).
@@ -10,8 +10,8 @@ const CURRENT_VERSION = 1;
 
 function keyFor(version: number): Buffer {
   const e = env();
-  if (version === CURRENT_VERSION) return Buffer.from(e.TOKEN_ENCRYPTION_KEY, "base64");
-  if (version === 0 && e.TOKEN_ENCRYPTION_KEY_PREVIOUS) return Buffer.from(e.TOKEN_ENCRYPTION_KEY_PREVIOUS, "base64");
+  if (version === CURRENT_VERSION) return decodeKey(e.TOKEN_ENCRYPTION_KEY);
+  if (version === 0 && e.TOKEN_ENCRYPTION_KEY_PREVIOUS) return decodeKey(e.TOKEN_ENCRYPTION_KEY_PREVIOUS);
   throw new Error(`Unknown encryption key version ${version}`);
 }
 

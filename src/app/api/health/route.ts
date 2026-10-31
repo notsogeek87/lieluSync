@@ -1,3 +1,4 @@
+import { env } from "@/lib/config/env";
 import { db } from "@/lib/db/client";
 import { json } from "@/lib/http/api";
 
@@ -6,6 +7,16 @@ export const dynamic = "force-dynamic";
 /** Public liveness/readiness probe. Exposes no user data. */
 export async function GET() {
   const started = Date.now();
+  try {
+    env();
+  } catch (err) {
+    // Names of missing/invalid variables only — never their values.
+    const missing = String(err instanceof Error ? err.message : err)
+      .replace(/^Invalid environment configuration: /, "")
+      .split("; ")
+      .map((x) => x.split(":")[0]);
+    return json({ status: "misconfigured", invalidVariables: missing }, 503);
+  }
   try {
     const [row] = await db()<{ last: Date | null; due: number }[]>`
       select max(last_sync_finished_at) as last,

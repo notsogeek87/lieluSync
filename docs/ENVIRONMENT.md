@@ -6,7 +6,7 @@
 | `DATABASE_URL` | oui | Chaîne Postgres **poolée** (Neon : hôte `-pooler`). | Console Neon › projet lielu-lists › *Connect* |
 | `DATABASE_SSL` | non | `require` / `disable`. Par défaut : désactivé pour localhost, requis sinon. | — |
 | `TMDB_API_READ_ACCESS_TOKEN` | oui | Jeton applicatif v4 (« API Read Access Token »). | themoviedb.org › Paramètres › API |
-| `TOKEN_ENCRYPTION_KEY` | oui | 32 octets en base64. Chiffre les tokens TMDB. **Le perdre = tous les utilisateurs doivent se reconnecter.** | `npm run gen:secret` |
+| `TOKEN_ENCRYPTION_KEY` | oui | 32 octets : 64 caractères hexadécimaux ou base64. Chiffre les tokens TMDB. **Le perdre = tous les utilisateurs doivent se reconnecter.** | `npm run gen:secret` ou https://generate-secret.vercel.app/64 |
 | `TOKEN_ENCRYPTION_KEY_PREVIOUS` | non | Ancienne clé pendant une rotation. | — |
 | `HASH_SECRET` | oui | ≥ 32 caractères. Clé HMAC des sessions, identifiants Stremio et clés de limitation. **Le changer invalide sessions et URLs Stremio.** | `npm run gen:secret` |
 | `CRON_SECRET` | oui | ≥ 32 caractères. Protège `/api/cron/sync`. Vercel l'envoie automatiquement au cron. | `npm run gen:secret` |
