@@ -9,8 +9,9 @@ export const maxDuration = 300;
 
 function authorized(req: Request): boolean {
   const header = (req.headers.get("authorization") ?? "").trim();
-  const expected = `Bearer ${env().CRON_SECRET}`;
-  return safeEqual(header, expected);
+  // "Bearer <secret>" (Vercel Cron) or the bare secret (some external schedulers).
+  const value = header.replace(/^Bearer\s+/i, "");
+  return value.length > 0 && safeEqual(value, env().CRON_SECRET);
 }
 
 /**

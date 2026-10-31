@@ -121,3 +121,12 @@ describe("route protection", () => {
     expect(keys.every((k) => k.key !== "k")).toBe(true); // hashed
   });
 });
+
+describe("cron authorization formats", () => {
+  it("accepts the bare secret as well as the Bearer form", async () => {
+    const bare = await cron(new Request(`${APP}/api/cron/sync`, { headers: { authorization: process.env.CRON_SECRET! } }));
+    expect(bare.status).toBe(200);
+    const empty = await cron(new Request(`${APP}/api/cron/sync`, { headers: { authorization: "Bearer " } }));
+    expect(empty.status).toBe(401);
+  });
+});
