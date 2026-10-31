@@ -18,6 +18,8 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1),
   DATABASE_SSL: z.enum(["require", "disable"]).optional(),
   TMDB_API_READ_ACCESS_TOKEN: z.string().min(20),
+  /** Override only for local end-to-end tests against a fake TMDB server. */
+  TMDB_API_BASE_URL: z.string().url().optional(),
   TOKEN_ENCRYPTION_KEY: base64Key,
   TOKEN_ENCRYPTION_KEY_PREVIOUS: base64Key.optional(),
   HASH_SECRET: z.string().min(32, "must be at least 32 characters"),

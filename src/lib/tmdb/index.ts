@@ -5,7 +5,10 @@ let client: TmdbClient | undefined;
 
 /** Shared client configured from the environment. Uses globalThis.fetch (stubbable in tests). */
 export function tmdb(): TmdbClient {
-  if (!client) client = new TmdbClient(env().TMDB_API_READ_ACCESS_TOKEN);
+  if (!client) {
+    const e = env();
+    client = new TmdbClient(e.TMDB_API_READ_ACCESS_TOKEN, e.TMDB_API_BASE_URL ? { baseUrl: e.TMDB_API_BASE_URL } : {});
+  }
   return client;
 }
 

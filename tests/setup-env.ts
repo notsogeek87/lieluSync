@@ -1,5 +1,5 @@
 // Deterministic, obviously fake configuration for tests. Never real secrets.
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string>).NODE_ENV = "test";
 process.env.APP_URL = process.env.TEST_APP_URL ?? "https://lists.test.local";
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/lielu_test";
 process.env.TMDB_API_READ_ACCESS_TOKEN = "test-app-read-access-token-0000000000";
