@@ -12,6 +12,7 @@
 | Validation | Zod pour l'environnement, les corps JSON (taille max 16 Ko) et les réponses TMDB ; ids de catalogue/TMDB analysés strictement. |
 | Anti-abus | Limitation en base (fenêtres fixes, clés hachées) : 20 connexions/10 min/IP, 300 req/min/IP sur l'addon, synchro manuelle 1/min. Fail-open si la base est indisponible. Complément recommandé : règle *Rate limiting* du Vercel Firewall sur `/u/` et `/api/`. |
 | Route cron | `Authorization: Bearer $CRON_SECRET` comparé à temps constant. |
+| Gestion des addons Stremio (`/stremio`) | Le navigateur appelle directement `api.strem.io` (login, AddonCollectionGet/Set). Identifiants et clé de session Stremio restent en mémoire de la page : jamais envoyés au serveur Lielu Lists, jamais stockés (ni cookie ni localStorage). CSP `connect-src` limitée à `'self'` et `https://api.strem.io`. Les addons protégés (Cinemeta…) ne peuvent pas être retirés. |
 | En-têtes | CSP, HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: no-referrer` (UI) ; CORS `*` uniquement sur les routes Stremio. |
 | Suppression de compte | Révocation du token sur TMDB puis `DELETE FROM users` → cascade sur toutes les tables personnelles. Le cache `tmdb_media` ne contient aucune donnée personnelle. |
 | Secrets | Uniquement en variables d'environnement ; `.env*` ignorés par Git (sauf `.env.example`). |

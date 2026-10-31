@@ -10,11 +10,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "img-src 'self' data: https://image.tmdb.org https://secure.gravatar.com",
+      "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline'",
       "script-src 'self' 'unsafe-inline'",
       "font-src 'self'",
-      "connect-src 'self'",
+      "connect-src 'self' https://api.strem.io",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://www.themoviedb.org",

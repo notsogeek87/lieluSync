@@ -1,0 +1,24 @@
+import { describe, expect, it } from "vitest";
+import { moveAddon, placeLieluFirst, removeAddon, staleLieluEntries, type StremioAddonDescriptor } from "@/lib/stremio/collection";
+
+const mk = (id: string, url: string, prot = false): StremioAddonDescriptor => ({ transportUrl: url, manifest: { id, name: id }, flags: { protected: prot } });
+const cinemeta = mk("com.linvo.cinemeta", "https://v3-cinemeta.strem.io/manifest.json", true);
+const torrent = mk("x.streams", "https://streams.example/manifest.json");
+const oldLielu = mk("eu.lielu.lists", "https://lielu-sync.vercel.app/u/OLD/manifest.json");
+const NEW = "https://lists.lielu.eu/u/NEW/manifest.json";
+
+describe("Stremio collection editing", () => {
+  it("puts Lielu Lists first and drops stale Lielu entries", () => {
+    const out = placeLieluFirst([cinemeta, oldLielu, torrent], NEW, { id: "eu.lielu.lists", name: "Lielu Lists" });
+    expect(out.map((a) => a.transportUrl)).toEqual([NEW, cinemeta.transportUrl, torrent.transportUrl]);
+    expect(staleLieluEntries([cinemeta, oldLielu], NEW)).toBe(1);
+  });
+  it("moves within bounds only", () => {
+    expect(moveAddon([cinemeta, torrent], 1, -1).map((a) => a.manifest.id)).toEqual(["x.streams", "com.linvo.cinemeta"]);
+    expect(moveAddon([cinemeta, torrent], 0, -1)).toEqual([cinemeta, torrent]);
+  });
+  it("never removes protected addons", () => {
+    expect(removeAddon([cinemeta, torrent], 0)).toHaveLength(2);
+    expect(removeAddon([cinemeta, torrent], 1)).toEqual([cinemeta]);
+  });
+});
