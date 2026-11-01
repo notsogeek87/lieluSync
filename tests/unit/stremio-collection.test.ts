@@ -22,3 +22,16 @@ describe("Stremio collection editing", () => {
     expect(removeAddon([cinemeta, torrent], 1)).toEqual([cinemeta]);
   });
 });
+
+import { manifestSignature, refreshLieluManifest } from "@/lib/stremio/collection";
+describe("manifest refresh", () => {
+  it("detects catalog order changes and updates in place", () => {
+    const a = { id: "eu.lielu.lists", name: "Lielu Lists", catalogs: [{ type: "movie", id: "ll-1", name: "A" }, { type: "movie", id: "ll-2", name: "B" }] };
+    const b = { ...a, catalogs: [a.catalogs[1], a.catalogs[0]] };
+    expect(manifestSignature(a)).not.toBe(manifestSignature(b));
+    const cinemeta = mk("com.linvo.cinemeta", "https://v3-cinemeta.strem.io/manifest.json", true);
+    const out = refreshLieluManifest([cinemeta, { transportUrl: NEW, manifest: a }], NEW, b);
+    expect(out[0]).toBe(cinemeta);
+    expect(manifestSignature(out[1]!.manifest)).toBe(manifestSignature(b));
+  });
+});

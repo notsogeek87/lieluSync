@@ -204,3 +204,23 @@ export async function getDashboardStats(userId: string, sql: Db = db()): Promise
       (select count(*)::int from tmdb_lists where user_id = ${userId} and status = 'error') as "listsInError"`;
   return row!;
 }
+
+/**
+ * Sets the display order of the user's catalogs (Stremio home rows follow the
+ * manifest order). `orderedIds` must contain only catalogs of this user;
+ * catalogs not listed keep their relative order after the listed ones.
+ */
+export async function reorderCatalogs(userId: string, orderedIds: string[], sql = db()): Promise<boolean> {
+  return sql.begin(async (tx) => {
+    const owned = await tx<{ id: string }[]>`select id from selected_catalogs where user_id = ${userId} order by position, created_at`;
+    const ownedIds = new Set(owned.map((r) => r.id));
+    if (orderedIds.some((id) => !ownedIds.has(id)) || new Set(orderedIds).size !== orderedIds.length) return false;
+    const rest = owned.map((r) => r.id).filter((id) => !orderedIds.includes(id));
+    const final = [...orderedIds, ...rest];
+    await tx`
+      update selected_catalogs sc set position = t.pos, updated_at = now()
+      from jsonb_to_recordset(${tx.json(final.map((id, pos) => ({ id, pos })))}) as t(id uuid, pos int)
+      where sc.id = t.id and sc.user_id = ${userId}`;
+    return true;
+  });
+}

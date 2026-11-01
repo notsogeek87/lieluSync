@@ -130,3 +130,29 @@ describe("cron authorization formats", () => {
     expect(empty.status).toBe(401);
   });
 });
+
+import { POST as orderCatalogs } from "@/app/api/catalogs/order/route";
+describe("catalog order", () => {
+  it("reorders the manifest catalogs and rejects foreign ids", async () => {
+    const a = await connectedUser(fake, "acc-1");
+    const b = await connectedUser(fake, "acc-2");
+    a.account.watchlist.movie = items("movie", 1);
+    a.account.lists.push({ id: 7, name: "Charlie", items: items("movie", 2), updated_at: "1", public: false });
+    b.account.watchlist.movie = items("movie", 3);
+    await syncUser(a.userId, "manual", { client });
+    await syncUser(b.userId, "manual", { client });
+    const manifest = async () => (await (await manifestRoute(new Request(`${APP}/u/x/manifest.json`), params({ token: a.configToken }))).json()).catalogs.map((c: any) => `${c.name}|${c.type}`);
+    expect(await manifest()).toEqual(["Ma Watchlist|movie", "Ma Watchlist|series", "Charlie|movie"]);
+
+    const ids = (await db()`select sc.id from selected_catalogs sc join tmdb_lists l on l.id = sc.list_id where sc.user_id = ${a.userId} order by l.name, sc.media_type`).map((r) => r.id as string);
+    const res = await orderCatalogs(authedRequest("/api/catalogs/order", a.sessionToken, { method: "POST", body: JSON.stringify({ ids }) }));
+    expect(res.status).toBe(200);
+    expect(await manifest()).toEqual(["Charlie|movie", "Ma Watchlist|movie", "Ma Watchlist|series"]);
+
+    const [foreign] = await db()`select id from selected_catalogs where user_id = ${b.userId}`;
+    const bad = await orderCatalogs(authedRequest("/api/catalogs/order", a.sessionToken, { method: "POST", body: JSON.stringify({ ids: [foreign!.id] }) }));
+    expect(bad.status).toBe(400);
+    const csrf = await orderCatalogs(authedRequest("/api/catalogs/order", a.sessionToken, { method: "POST", origin: "https://evil.example", body: JSON.stringify({ ids }) }));
+    expect(csrf.status).toBe(403);
+  });
+});

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { isLielu, isProtected, moveAddon, placeLieluFirst, removeAddon, staleLieluEntries, type StremioAddonDescriptor } from "@/lib/stremio/collection";
+import { isLielu, isProtected, manifestSignature, moveAddon, placeLieluFirst, refreshLieluManifest, removeAddon, staleLieluEntries, type StremioAddonDescriptor } from "@/lib/stremio/collection";
 
 /**
  * Edits the user's Stremio addon collection directly from the browser.
@@ -35,11 +35,29 @@ export function StremioManager({ manifestUrl }: { manifestUrl: string }) {
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ kind: "ok" | "danger" | "warn"; text: string } | null>(null);
+  const [current, setCurrent] = useState<StremioAddonDescriptor["manifest"] | null>(null);
+
+  async function fetchManifest(): Promise<StremioAddonDescriptor["manifest"]> {
+    const res = await fetch(manifestUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("Impossible de lire votre manifest Lielu Lists.");
+    return (await res.json()) as StremioAddonDescriptor["manifest"];
+  }
 
   async function load(key: string) {
-    const r = await stremio<{ addons: StremioAddonDescriptor[] }>("addonCollectionGet", { type: "AddonCollectionGet", authKey: key, update: true });
+    const [r, m] = await Promise.all([
+      stremio<{ addons: StremioAddonDescriptor[] }>("addonCollectionGet", { type: "AddonCollectionGet", authKey: key, update: true }),
+      fetchManifest().catch(() => null),
+    ]);
     setAddons(r.addons);
+    setCurrent(m);
     setDirty(false);
+  }
+
+  function updateInPlace() {
+    if (!addons || !current) return;
+    setAddons(refreshLieluManifest(addons, manifestUrl, current));
+    setDirty(true);
+    setMsg({ kind: "warn", text: "Catalogues mis à jour. Enregistrez pour l'appliquer à Stremio." });
   }
 
   async function connect(e: React.FormEvent) {
@@ -67,9 +85,8 @@ export function StremioManager({ manifestUrl }: { manifestUrl: string }) {
     setBusy("install");
     setMsg(null);
     try {
-      const res = await fetch(manifestUrl, { cache: "no-store" });
-      if (!res.ok) throw new Error("Impossible de lire votre manifest Lielu Lists.");
-      const manifest = (await res.json()) as StremioAddonDescriptor["manifest"];
+      const manifest = await fetchManifest();
+      setCurrent(manifest);
       setAddons(placeLieluFirst(addons, manifestUrl, manifest));
       setDirty(true);
       setMsg({ kind: "warn", text: "Lielu Lists est placé en tête. Enregistrez pour l'appliquer à Stremio." });
@@ -143,6 +160,8 @@ export function StremioManager({ manifestUrl }: { manifestUrl: string }) {
   const stale = staleLieluEntries(addons, manifestUrl);
   const installed = addons.some((a) => isLielu(a) && a.transportUrl === manifestUrl);
   const first = addons[0] && isLielu(addons[0]) && addons[0].transportUrl === manifestUrl;
+  const mine = addons.find((a) => isLielu(a) && a.transportUrl === manifestUrl);
+  const outdated = !!(mine && current && manifestSignature(mine.manifest) !== manifestSignature(current));
 
   return (
     <div className="stack">
@@ -150,12 +169,16 @@ export function StremioManager({ manifestUrl }: { manifestUrl: string }) {
         <p>
           {first ? <span className="status ok">Lielu Lists est en tête</span> : installed ? <span className="status warn">Lielu Lists est installé, mais pas en tête</span> : <span className="status danger">Lielu Lists n&apos;est pas installé sur ce compte</span>}
         </p>
+        {outdated ? <p className="small status warn">Vos catalogues ont changé (ordre, noms ou listes activées) depuis l&apos;installation : mettez à jour l&apos;addon.</p> : null}
         {stale ? <p className="small muted">{stale} ancienne(s) installation(s) de Lielu Lists seront retirées.</p> : null}
         <div className="btn-row">
           {!first || stale ? (
             <button type="button" className="btn primary" onClick={installFirst} disabled={busy !== null}>
               {installed ? "Mettre Lielu Lists en tête" : "Installer Lielu Lists en tête"}
             </button>
+          ) : null}
+          {outdated ? (
+            <button type="button" className="btn primary" onClick={updateInPlace} disabled={busy !== null}>Mettre à jour Lielu Lists</button>
           ) : null}
           <button type="button" className={`btn${dirty ? " primary" : ""}`} onClick={save} disabled={!dirty || busy !== null}>
             {busy === "save" ? "Enregistrement…" : "Enregistrer dans Stremio"}

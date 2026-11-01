@@ -49,3 +49,14 @@ export function removeAddon(addons: StremioAddonDescriptor[], index: number): St
 export function staleLieluEntries(addons: StremioAddonDescriptor[], manifestUrl: string): number {
   return addons.filter((a) => isLielu(a) && a.transportUrl !== manifestUrl).length;
 }
+
+/** Identity of what Stremio displays from a manifest (catalog order, names, types). */
+export function manifestSignature(m: StremioAddonDescriptor["manifest"] | undefined): string {
+  const cats = (m?.catalogs as { type: string; id: string; name: string }[] | undefined) ?? [];
+  return JSON.stringify([m?.version ?? "", cats.map((c) => [c.type, c.id, c.name])]);
+}
+
+/** Replaces the stored manifest of the current Lielu install, keeping its position. */
+export function refreshLieluManifest(addons: StremioAddonDescriptor[], manifestUrl: string, manifest: StremioAddonDescriptor["manifest"]): StremioAddonDescriptor[] {
+  return addons.map((a) => (isLielu(a) && a.transportUrl === manifestUrl ? { ...a, manifest } : a));
+}
