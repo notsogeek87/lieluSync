@@ -30,11 +30,13 @@ export interface StremioManifest {
  * Stremio displays catalogs as "<name> - <type>", so a mixed TMDB list shows
  * as two rows (films / séries) and contents never mix.
  */
-export function buildManifest(appUrl: string, catalogs: ManifestCatalogInput[]): StremioManifest {
+export function buildManifest(appUrl: string, catalogs: ManifestCatalogInput[], profile?: { id: string; name: string }): StremioManifest {
   return {
-    id: ADDON_ID,
+    // Stremio keys installed addons by manifest id: each profile needs its own
+    // so several of them can be installed side by side on one Stremio account.
+    id: profile ? `${ADDON_ID}.${profile.id.replace(/-/g, "").slice(0, 12)}` : ADDON_ID,
     version: pkg.version,
-    name: ADDON_NAME,
+    name: profile ? `${ADDON_NAME} · ${profile.name}` : ADDON_NAME,
     description: `${ADDON_NAME} — ${TAGLINE}. Vos listes TMDB (watchlists et listes personnelles) synchronisées automatiquement dans Stremio. Édité par Lielu.`,
     logo: `${appUrl}/logo-256.png`,
     resources: ["catalog", { name: "meta", types: ["movie", "series"], idPrefixes: [TMDB_PREFIX] }],

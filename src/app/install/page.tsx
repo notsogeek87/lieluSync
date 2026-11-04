@@ -26,6 +26,16 @@ export default async function Install() {
         <CopyField label="URL du manifest" value={manifestUrl} />
       </div>
 
+      <section className="section" aria-labelledby="profiles">
+        <h2 id="profiles">Profils</h2>
+        <div className="panel panel-pad stack">
+          <p className="muted">Créez des URL supplémentaires qui n&apos;affichent qu&apos;une sélection de vos listes (enfants, autre compte Stremio…).</p>
+          <div className="btn-row">
+            <Link className="btn" href="/profiles">Gérer mes profils</Link>
+          </div>
+        </div>
+      </section>
+
       <section className="section" aria-labelledby="how">
         <h2 id="how">Ajouter l&apos;addon</h2>
         <ol className="steps">

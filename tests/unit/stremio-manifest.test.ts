@@ -49,3 +49,14 @@ describe("Stremio HTTP helpers", () => {
     expect(parseExtra(undefined)).toEqual({});
   });
 });
+
+describe("Stremio manifest for a profile", () => {
+  const cats = [{ id: "11111111-1111-4111-8111-111111111111", media_type: "movie" as const, name: "Kids" }];
+  const m = buildManifest("https://lists.example", cats, { id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee", name: "Enfants" });
+
+  it("gets its own addon id and name so it can sit next to the main addon", () => {
+    expect(m.id).toBe("eu.lielu.lists.aaaaaaaabbbb");
+    expect(m.id).not.toBe(buildManifest("https://lists.example", cats).id);
+    expect(m.name).toBe("Lielu Lists · Enfants");
+  });
+});

@@ -102,6 +102,7 @@ export default async function Lists() {
       <p className="small muted" style={{ marginTop: 24 }}>
         Les changements de contenu (ajouts, suppressions) apparaissent dans Stremio sans rien faire. Après avoir activé, renommé ou
         réordonné des catalogues, utilisez <Link href="/stremio">Mes addons Stremio › Mettre à jour Lielu Lists</Link> pour que Stremio en tienne compte.
+        Pour n&apos;afficher que certaines listes sur un appareil ou un compte, créez un <Link href="/profiles">profil</Link>.
       </p>
     </AppShell>
   );

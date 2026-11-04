@@ -54,6 +54,7 @@ users ─┬─ user_sessions            sessions web (hash)
        ├─ tmdb_accounts ── tmdb_tokens   (token v4 chiffré AES-256-GCM)
        ├─ tmdb_lists ─┬─ list_items      miroir exact de TMDB (ordre, type)
        │              └─ selected_catalogs  (liste × type) : activé, nom perso, ordre
+       │                    └─ profiles → profile_catalogs : URL d'installation supplémentaire limitée à un sous-ensemble de catalogues
        ├─ sync_jobs ── sync_logs          historique sans données sensibles
 tmdb_media                                cache partagé des métadonnées (sans donnée perso)
 catalog_items (vue)                       lignes prêtes pour Stremio

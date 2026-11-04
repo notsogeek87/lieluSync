@@ -6,6 +6,7 @@ Addon Stremio qui synchronise automatiquement les listes d'un compte TMDB (watch
 
 - Connexion TMDB officielle (authentification utilisateur v4), token chiffré, révocable.
 - Choix des listes exposées, renommage, films et séries toujours dans des catalogues séparés.
+- **Profils** : des URL d'installation supplémentaires qui n'exposent qu'une sélection de catalogues (enfants, autre compte Stremio…), chacune avec son propre nom d'addon et régénérable séparément (page `/profiles`, max 10).
 - URL d'installation personnelle, aléatoire et régénérable ; aucun token dans l'URL.
 - Catalogues en français (titres, résumés, affiches) avec repli sur la langue d'origine.
 - Identifiants IMDb pour la compatibilité avec Cinemeta et les addons de sources ; repli `tmdb:` avec fiche servie par l'addon.

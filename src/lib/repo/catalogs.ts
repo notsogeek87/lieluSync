@@ -9,12 +9,13 @@ export interface EnabledCatalog {
 }
 
 /** Catalogs exposed in the user's manifest (enabled, list still exists on TMDB). */
-export async function getEnabledCatalogs(userId: string, sql: Db = db()): Promise<EnabledCatalog[]> {
+export async function getEnabledCatalogs(userId: string, profileId: string | null = null, sql: Db = db()): Promise<EnabledCatalog[]> {
   return sql<EnabledCatalog[]>`
     select sc.id, sc.media_type, coalesce(sc.custom_name, l.name) as name
     from selected_catalogs sc
     join tmdb_lists l on l.id = sc.list_id
     where sc.user_id = ${userId} and sc.enabled and l.status <> 'gone'
+      and (${profileId}::uuid is null or exists (select 1 from profile_catalogs pc where pc.profile_id = ${profileId} and pc.catalog_id = sc.id))
     order by sc.position, lower(coalesce(sc.custom_name, l.name))`;
 }
 
@@ -24,10 +25,11 @@ export const STREMIO_PAGE_SIZE = 100;
  * One page of a catalog. Returns null if the catalog does not belong to this
  * user, is disabled or of another type — callers answer with an empty list.
  */
-export async function getCatalogPage(userId: string, catalogId: string, mediaType: MediaType, skip: number, sql: Db = db()): Promise<CatalogItemRow[] | null> {
+export async function getCatalogPage(userId: string, catalogId: string, mediaType: MediaType, skip: number, profileId: string | null = null, sql: Db = db()): Promise<CatalogItemRow[] | null> {
   const [owner] = await sql<{ id: string }[]>`
     select sc.id from selected_catalogs sc join tmdb_lists l on l.id = sc.list_id
-    where sc.id = ${catalogId} and sc.user_id = ${userId} and sc.media_type = ${mediaType} and sc.enabled and l.status <> 'gone'`;
+    where sc.id = ${catalogId} and sc.user_id = ${userId} and sc.media_type = ${mediaType} and sc.enabled and l.status <> 'gone'
+      and (${profileId}::uuid is null or exists (select 1 from profile_catalogs pc where pc.profile_id = ${profileId} and pc.catalog_id = sc.id))`;
   if (!owner) return null;
   return sql<CatalogItemRow[]>`
     select media_type, tmdb_id, imdb_id, title, overview, poster_path, backdrop_path, release_date, end_date, in_production, genres, vote_average

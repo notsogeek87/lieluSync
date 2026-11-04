@@ -1,7 +1,8 @@
 import { env } from "@/lib/config/env";
 import { log } from "@/lib/log";
 import { runInBackground } from "@/lib/background";
-import { getUserByConfigToken, type UserRow } from "@/lib/repo/users";
+import { getUserByConfigToken, getUserById, type UserRow } from "@/lib/repo/users";
+import { getProfileByToken } from "@/lib/repo/profiles";
 import { getCatalogPage, getEnabledCatalogs, getUserMedia } from "@/lib/repo/catalogs";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { syncUser } from "@/lib/sync/engine";
@@ -16,14 +17,18 @@ const CATALOG_CACHE = { maxAge: 300, staleRevalidate: 900, staleError: 86400 };
 const MANIFEST_CACHE = { maxAge: 300, staleRevalidate: 3600, staleError: 86400 };
 const META_CACHE = { maxAge: 21600, staleRevalidate: 86400, staleError: 604800 };
 
-type Resolved = { user: UserRow } | { response: Response };
+type Resolved = { user: UserRow; profile: { id: string; name: string } | null } | { response: Response };
 
 async function resolve(req: Request, token: string): Promise<Resolved> {
   const rl = await rateLimit(`addon:${clientIp(req.headers)}`, 300, 60);
   if (!rl.allowed) return { response: stremioJson({ error: "rate_limited" }, { status: 429 }) };
   const user = await getUserByConfigToken(token);
-  if (!user) return { response: stremioJson({ error: "unknown_configuration" }, { status: 404 }) };
-  return { user };
+  if (user) return { user, profile: null };
+  // Not the main URL: it may be a profile URL (same user, restricted catalogs).
+  const profile = await getProfileByToken(token);
+  const owner = profile ? await getUserById(profile.user_id) : null;
+  if (!profile || !owner) return { response: stremioJson({ error: "unknown_configuration" }, { status: 404 }) };
+  return { user: owner, profile: { id: profile.id, name: profile.name } };
 }
 
 /**
@@ -45,8 +50,8 @@ export async function handleManifest(req: Request, token: string): Promise<Respo
   try {
     const r = await resolve(req, token);
     if ("response" in r) return r.response;
-    const catalogs = await getEnabledCatalogs(r.user.id);
-    return stremioJson(buildManifest(env().APP_URL, catalogs), { cache: MANIFEST_CACHE });
+    const catalogs = await getEnabledCatalogs(r.user.id, r.profile?.id ?? null);
+    return stremioJson(buildManifest(env().APP_URL, catalogs, r.profile ?? undefined), { cache: MANIFEST_CACHE });
   } catch (err) {
     log.error("addon.manifest_failed", { err });
     return stremioJson({ error: "unavailable" }, { status: 503 });
@@ -70,7 +75,7 @@ export async function handleCatalog(req: Request, token: string, type: string, r
     const skip = Math.min(100_000, Math.max(0, Math.floor(Number(extra.skip ?? 0)) || 0));
 
     maybeRefresh(r.user);
-    const rows = await getCatalogPage(r.user.id, catalogId, mediaType, skip);
+    const rows = await getCatalogPage(r.user.id, catalogId, mediaType, skip, r.profile?.id ?? null);
     if (!rows) return stremioJson({ metas: [] }, { status: 404 });
     return stremioJson({ metas: dedupeMetas(rows.map(toMetaPreview)) }, { cache: CATALOG_CACHE });
   } catch (err) {
