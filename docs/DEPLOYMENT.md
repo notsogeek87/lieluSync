@@ -29,7 +29,7 @@ Migrations futures : `DATABASE_URL="<chaîne>" npm run db:migrate` (le script ig
 Vercel **refuse le déploiement** d'un cron plus fréquent qu'une fois par jour sur le plan Hobby. Le dépôt est donc configuré ainsi :
 
 - `vercel.json` : cron **quotidien** `0 5 * * *` (filet de sécurité ; Hobby le déclenche entre 5 h 00 et 5 h 59 UTC) ;
-- **n8n** (auto.lielu.eu), workflow « Lielu Lists - Synchro toutes les 15 min » : *Schedule Trigger* toutes les 15 min → `GET <APP_URL>/api/cron/sync` avec l'en-tête `Authorization: Bearer <CRON_SECRET>` (identifiant n8n « Lielu Lists - CRON_SECRET », type *Custom Auth* avec le modèle `{"headers":{"Authorization":"Bearer {{api_key}}"}}`) → alerte Telegram uniquement en cas de panne, de rétablissement, puis rappel toutes les 4 h si la panne dure.
+- **n8n** (auto.lielu.eu), workflow « Lielu Lists - Synchro toutes les 15 min » : *Schedule Trigger* toutes les 15 min → `GET <APP_URL>/api/cron/sync` avec l'en-tête `Authorization: Bearer <CRON_SECRET>` (identifiant n8n « Lielu Lists - CRON_SECRET », type *Custom Auth* avec le modèle `{"headers":{"Authorization":"Bearer {{api_key}}"}}`) (3 essais, 5 s d'écart, pour absorber les ratés DNS passagers comme `EAI_AGAIN`) → alerte Telegram seulement après 2 exécutions consécutives en échec, message au rétablissement, puis rappel toutes les 4 h si la panne dure.
 
 Pour activer le workflow après le premier déploiement : renseigner l'URL dans le nœud « Lancer la synchronisation », créer l'identifiant avec la valeur de `CRON_SECRET`, tester avec « Tester maintenant », puis publier.
 
